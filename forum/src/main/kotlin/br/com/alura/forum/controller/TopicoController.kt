@@ -2,10 +2,17 @@ package br.com.alura.forum.controller
 
 import br.com.alura.forum.dto.AtualizacaoNovoTopicoForm
 import br.com.alura.forum.dto.NovoTopicoForm
+import br.com.alura.forum.dto.TopicoPorCategoriaDto
 import br.com.alura.forum.dto.TopicoView
-import br.com.alura.forum.model.Topico
 import br.com.alura.forum.service.TopicoService
+import jakarta.transaction.Transactional
 import jakarta.validation.Valid
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -17,8 +24,12 @@ import java.util.*
 class TopicoController(private val service: TopicoService) {
 
     @GetMapping
-    fun listar(): List<TopicoView>{
-       return service.listar()
+    @Cacheable("topicos")
+    fun listar(
+        @RequestParam(required = false) nomeCurso: String?,
+        @PageableDefault(size = 5, sort = ["data_criacao"], direction = Sort.Direction.DESC) paginacao: Pageable
+    ): Page<TopicoView> {
+       return service.listar(nomeCurso, paginacao)
     }
 
     @GetMapping("/{id}")
@@ -27,6 +38,8 @@ class TopicoController(private val service: TopicoService) {
     }
 
     @PostMapping
+    @Transactional
+    @CacheEvict(value = ["topicos"], allEntries = true)
     fun cadastrar(
         @RequestBody @Valid form: NovoTopicoForm,
         uriBuilder: UriComponentsBuilder)
@@ -37,6 +50,8 @@ class TopicoController(private val service: TopicoService) {
     }
 
     @PutMapping
+    @Transactional
+    @CacheEvict(value = ["topicos"], allEntries = true)
     fun atualzar(@RequestBody @Valid form: AtualizacaoNovoTopicoForm):
         ResponseEntity<TopicoView>{
             val topicoView = service.atualizar(form)
@@ -45,7 +60,14 @@ class TopicoController(private val service: TopicoService) {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Transactional
+    @CacheEvict(value = ["topicos"], allEntries = true)
     fun deletar(@PathVariable id:Long){
         service.deletar(id)
+    }
+
+    @GetMapping("/relatorio")
+    fun relatorio(): List<TopicoPorCategoriaDto>{
+        return service.relatorio()
     }
 }
