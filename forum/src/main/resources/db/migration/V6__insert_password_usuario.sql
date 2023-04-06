@@ -1,2 +1,1 @@
-UPDATE usuario SET password = '$2a$12$GNSl3.SVq/dM3sxYjsIVR.05Gf3CCNEXrYK8sNgW1j624CRXgUe0.'
-WHERE id = 1
+UPDATE usuario SET password = '$2y$12$rnZ4zWxhPv.7iSOhBKkGqu2PVsJf./W78TScYJd.EWdaEeWhnhQW.' WHERE id = 1;

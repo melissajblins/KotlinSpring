@@ -8,18 +8,16 @@ import org.springframework.stereotype.Service
 import java.lang.RuntimeException
 
 @Service
-class UsuarioService (
+class UsuarioService(
     private val repository: UsuarioRepository
-    ): UserDetailsService {
+) : UserDetailsService {
 
     fun buscarPorId(id: Long): Usuario {
         return repository.getOne(id)
     }
 
     override fun loadUserByUsername(username: String?): UserDetails {
-        val usuario = repository.findByEmail(username)?:throw RuntimeException()
+        val usuario = repository.findByEmail(username) ?: throw RuntimeException()
         return UserDetail(usuario)
     }
-
-
 }
